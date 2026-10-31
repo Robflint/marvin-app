@@ -10,6 +10,8 @@ const input = $("input");
 const mic = $("mic");
 const status = $("status");
 
+export const VERSION = "4";
+
 const DEFAULTS = {
   anthropicKey: "",
   githubToken: "",
@@ -255,6 +257,7 @@ $("open-settings").onclick = () => {
     if (el.type === "checkbox") el.checked = Boolean(v);
     else el.value = v;
   }
+  $("version").textContent = `App version ${VERSION}`;
   $("settings").showModal();
 };
 $("settings").addEventListener("close", () => {
@@ -276,7 +279,7 @@ newAgent(load("marvin.messages", []));
 renderLog();
 refreshGoogleChip();
 
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).catch(() => {});
 
 // Home-screen shortcut "Talk to Marvin" opens with ?listen=1.
 if (new URLSearchParams(location.search).has("listen") && canListen && configured()) {

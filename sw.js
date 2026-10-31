@@ -2,7 +2,7 @@
 // falling back to the cache when offline.
 // API calls (Anthropic, GitHub, Google) always go to the network.
 
-const CACHE = "marvin-v3";
+const CACHE = "marvin-v4";
 const SHELL = [
   "./",
   "index.html",
@@ -37,7 +37,8 @@ self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET" || url.origin !== location.origin) return;
   e.respondWith(
     caches.open(CACHE).then((cache) =>
-      fetch(e.request)
+      // no-cache: revalidate with the server instead of trusting the browser's HTTP cache (Pages caches 10 min).
+      fetch(e.request, { cache: "no-cache" })
         .then((res) => {
           if (res.ok) cache.put(e.request, res.clone());
           return res;
