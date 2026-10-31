@@ -10,7 +10,7 @@ const input = $("input");
 const mic = $("mic");
 const status = $("status");
 
-export const VERSION = "4";
+export const VERSION = "5";
 
 const DEFAULTS = {
   anthropicKey: "",

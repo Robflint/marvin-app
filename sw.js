@@ -2,7 +2,7 @@
 // falling back to the cache when offline.
 // API calls (Anthropic, GitHub, Google) always go to the network.
 
-const CACHE = "marvin-v4";
+const CACHE = "marvin-v5";
 const SHELL = [
   "./",
   "index.html",
