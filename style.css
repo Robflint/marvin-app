@@ -177,3 +177,8 @@ dialog input[type="range"] { padding: 0; }
 menu { display: flex; justify-content: flex-end; gap: 8px; padding: 0; margin: 12px 0 0; }
 menu button { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); }
 menu .primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+
+.event-title { font-weight: 600; margin-bottom: 2px; }
+.event-when { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
+.draft-actions .add { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+.draft-actions .add:disabled { background: var(--bg); color: var(--muted); border-color: var(--border); }

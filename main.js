@@ -1,6 +1,6 @@
 import { Agent } from "./lib/agent.js";
 import { Repo } from "./lib/github.js";
-import { connectGoogle, googleToken } from "./lib/google.js";
+import { connectGoogle, createEvent, googleToken } from "./lib/google.js";
 import { renderMarkdown, escapeHtml } from "./lib/md.js";
 import { canListen, englishVoices, listen, speak, stopSpeaking } from "./lib/voice.js";
 
@@ -10,7 +10,7 @@ const input = $("input");
 const mic = $("mic");
 const status = $("status");
 
-export const VERSION = "6";
+export const VERSION = "7";
 
 const DEFAULTS = {
   anthropicKey: "",
@@ -43,7 +43,7 @@ function store(key, value) {
 
 let settings = { ...DEFAULTS, ...load("marvin.settings", {}) };
 let agent = null;
-let log = load("marvin.log", []); // [{who: "me"|"marvin"|"error"|"draft", text|draft}]
+let log = load("marvin.log", []); // [{who: "me"|"marvin"|"error"|"draft"|"event", text|draft|event}]
 let busy = false;
 
 function configured() {
@@ -58,6 +58,12 @@ function newAgent(messages = []) {
     ui: {
       onText: (t) => updateLive(t),
       onStatus: (s) => (status.textContent = s),
+      onEvent: (ev) => {
+        const item = { who: "event", event: ev, added: false };
+        log.push(item);
+        addEventCard(item);
+        save();
+      },
       onDraft: (d) => {
         log.push({ who: "draft", draft: d });
         addDraft(d);
@@ -118,6 +124,59 @@ function addDraft(d) {
   scrollDown();
 }
 
+function calendarFor(which) {
+  const ids = settings.calendarIds.split(",").map((c) => c.trim()).filter(Boolean);
+  const shared = ids.find((i) => i.includes("group.calendar.google.com"));
+  if (which === "family" && shared) return { id: shared, label: "Family calendar" };
+  return { id: ids.find((i) => !i.includes("group.calendar.google.com")) || "primary", label: "Main calendar" };
+}
+
+function describeEvent(ev) {
+  const day = new Date(`${ev.date}T12:00:00Z`).toLocaleDateString("en-GB", {
+    weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "UTC",
+  });
+  const until = ev.end_date && ev.end_date !== ev.date ? ` – ${ev.end_date}` : "";
+  const time = ev.start_time ? `, ${ev.start_time}${ev.end_time ? `–${ev.end_time}` : ""}` : " (all day)";
+  return `${day}${until}${time}`;
+}
+
+function addEventCard(item) {
+  chat.querySelector(".empty")?.remove();
+  const ev = item.event;
+  const cal = calendarFor(ev.calendar);
+  const node = $("event-card").content.firstElementChild.cloneNode(true);
+  node.querySelector(".draft-head").textContent = `Calendar event · ${cal.label}`;
+  node.querySelector(".event-title").textContent = ev.title;
+  node.querySelector(".event-when").textContent =
+    [describeEvent(ev), ev.location, ev.reminder_minutes != null ? `reminder ${ev.reminder_minutes} min before` : ""]
+      .filter(Boolean).join(" · ");
+  const btn = node.querySelector(".add");
+  const done = () => {
+    btn.textContent = "Added ✓";
+    btn.disabled = true;
+  };
+  if (item.added) done();
+  btn.onclick = async () => {
+    btn.disabled = true;
+    btn.textContent = "Adding…";
+    try {
+      if (!googleToken()) await connectGoogle(settings.googleClientId);
+      await createEvent(cal.id, ev);
+      item.added = true;
+      save();
+      done();
+      status.textContent = `Added to ${cal.label}`;
+    } catch (e) {
+      btn.disabled = false;
+      btn.textContent = "Add to calendar";
+      status.textContent = `Not added: ${e.message}`;
+    }
+    refreshGoogleChip();
+  };
+  chat.appendChild(node);
+  scrollDown();
+}
+
 function renderLog() {
   chat.innerHTML = "";
   if (!log.length) {
@@ -130,6 +189,7 @@ function renderLog() {
   }
   for (const item of log) {
     if (item.who === "draft") addDraft(item.draft);
+    else if (item.who === "event") addEventCard(item);
     else addBubble(item.who, item.text);
   }
 }
