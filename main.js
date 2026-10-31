@@ -2,7 +2,7 @@ import { Agent } from "./lib/agent.js";
 import { Repo } from "./lib/github.js";
 import { connectGoogle, googleToken } from "./lib/google.js";
 import { renderMarkdown, escapeHtml } from "./lib/md.js";
-import { canListen, listen, speak, stopSpeaking } from "./lib/voice.js";
+import { canListen, englishVoices, listen, speak, stopSpeaking } from "./lib/voice.js";
 
 const $ = (id) => document.getElementById(id);
 const chat = $("chat");
@@ -10,7 +10,7 @@ const input = $("input");
 const mic = $("mic");
 const status = $("status");
 
-export const VERSION = "5";
+export const VERSION = "6";
 
 const DEFAULTS = {
   anthropicKey: "",
@@ -21,6 +21,9 @@ const DEFAULTS = {
   googleClientId: "",
   calendarIds: "primary",
   speak: true,
+  voiceName: "auto",
+  pitch: "0.7",
+  rate: "0.85",
   autoSend: true,
 };
 
@@ -163,7 +166,7 @@ async function send(text) {
     const reply = await agent.send(text);
     if (reply.trim()) {
       log.push({ who: "marvin", text: reply });
-      if (settings.speak) speak(reply);
+      if (settings.speak) speak(reply, settings);
     }
     status.textContent = "";
   } catch (e) {
@@ -258,8 +261,19 @@ $("open-settings").onclick = () => {
     else el.value = v;
   }
   $("version").textContent = `App version ${VERSION}`;
+  const select = form.elements.voiceName;
+  select.innerHTML = '<option value="auto">Auto (British male)</option>' +
+    englishVoices().map((v) => `<option value="${escapeHtml(v.name)}">${escapeHtml(v.name)} (${v.lang})</option>`).join("");
+  select.value = settings.voiceName;
   $("settings").showModal();
 };
+$("test-voice").onclick = () =>
+  speak("Twenty-eight things on your todo list. I have calculated the odds of you finishing them. You do not want to know.", {
+    voiceName: form.elements.voiceName.value,
+    pitch: form.elements.pitch.value,
+    rate: form.elements.rate.value,
+  });
+
 $("settings").addEventListener("close", () => {
   if ($("settings").returnValue !== "save") return;
   for (const k of Object.keys(DEFAULTS)) {

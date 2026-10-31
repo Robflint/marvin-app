@@ -172,6 +172,8 @@ dialog input:not([type="checkbox"]), dialog select {
   color: var(--text);
   font: inherit;
 }
+.test-voice { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--accent); color: var(--accent); background: none; margin-bottom: 4px; }
+dialog input[type="range"] { padding: 0; }
 menu { display: flex; justify-content: flex-end; gap: 8px; padding: 0; margin: 12px 0 0; }
 menu button { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); }
 menu .primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
