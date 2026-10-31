@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <title>Marvin</title>
+  <meta name="theme-color" content="#14161a">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Marvin</h1>
+    <span id="status" aria-live="polite"></span>
+    <button id="google" class="chip" hidden>Connect Google</button>
+    <button id="new" class="icon" title="New chat" aria-label="New chat">＋</button>
+    <button id="open-settings" class="icon" title="Settings" aria-label="Settings">⚙</button>
+  </header>
+
+  <main id="chat" aria-live="polite"></main>
+
+  <footer>
+    <form id="composer">
+      <textarea id="input" rows="1" placeholder="Ask Marvin…" enterkeyhint="send"></textarea>
+      <button id="send" type="submit" class="icon" aria-label="Send">➤</button>
+    </form>
+    <button id="mic" aria-label="Talk to Marvin"><span>🎤</span></button>
+  </footer>
+
+  <dialog id="settings">
+    <form method="dialog" id="settings-form">
+      <h2>Settings</h2>
+      <p class="hint">Keys are stored only on this phone.</p>
+      <label>Anthropic API key<input name="anthropicKey" type="password" autocomplete="off" required></label>
+      <label>GitHub token (contents read/write on the marvin repo)<input name="githubToken" type="password" autocomplete="off" required></label>
+      <label>Repo<input name="repo"></label>
+      <label>Model
+        <select name="model">
+          <option value="claude-opus-5-5">Claude Opus 5.5 (best)</option>
+          <option value="claude-sonnet-5-5">Claude Sonnet 5.5 (cheaper, faster)</option>
+          <option value="claude-haiku-5-5">Claude Haiku 5.5 (cheapest)</option>
+        </select>
+      </label>
+      <label>Effort
+        <select name="effort">
+          <option value="low">Low (fastest)</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+      </label>
+      <label>Google OAuth client ID<input name="googleClientId" autocomplete="off"></label>
+      <label>Calendar IDs (comma-separated)<input name="calendarIds"></label>
+      <label class="row"><input type="checkbox" name="speak"> Read replies aloud</label>
+      <label class="row"><input type="checkbox" name="autoSend"> Send as soon as I stop talking</label>
+      <menu>
+        <button value="cancel" formnovalidate>Cancel</button>
+        <button value="save" class="primary">Save</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <template id="draft-card">
+    <div class="draft">
+      <div class="draft-head"></div>
+      <pre class="draft-body"></pre>
+      <div class="draft-actions">
+        <button class="copy">Copy</button>
+        <a class="open" target="_blank" rel="noopener">Open</a>
+      </div>
+    </div>
+  </template>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
